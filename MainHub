@@ -2,7 +2,7 @@ local library = loadstring(game:HttpGet("https://pastebin.com/raw/3AM83TSG"))();
 
 local Gamer = library:CreateSection("Farming");
 Gamer:Button("AutoRob", function()
-	loadstring(game:HttpGet("hhttps://raw.githubusercontent.com/bitsplode/PrisonBreakHub/main/AutoRobScript"))();
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/bitsplode/PrisonBreakHub/main/AutoRobScript"))();
 end)
 
 library:Ready();
