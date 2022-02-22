@@ -1,125 +1,288 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("DarkHub", "Midnight")
+local TweenService = game:GetService("TweenService")
+local trainRobbery = require(game.ReplicatedStorage.Module.TrainRobbery)
 local player = game.Players.LocalPlayer
-
-local nilinstances = {};
-
-local function teleport(X,Y,Z)
-	if Y == nil and Z == nil then
-		player.Character.HumanoidRootPart.CFrame = X
-	else
-		player.Character.HumanoidRootPart.CFrame = CFrame.new(X, Y, Z)
-	end
-end
-
-local function findNilInstance(name)
-	for i, v in pairs(nilinstances) do
-		if v.Name == name then
-			return v
+local vehicles = {}
+local function getAllVehicles()
+	for i, v in pairs(workspace:GetChildren()) do
+		if v:FindFirstChild("PacketID") and v.Name == "Camaro" then
+			table.insert(vehicles, v.DriveSeat)
 		end
 	end
 end
 
-local MainTab = Window:NewTab("Main")
-local localPlayer = MainTab:NewSection("LocalPlayer")
-local teleportsTab = MainTab:NewSection("Teleports")
-local mainSec = MainTab:NewSection("Game")
+local function fetchKeybind(action, packet)
+	game.ReplicatedStorage.Remotes.Server.VerifyAction:FireServer(action, packet)
+end
 
-local teleports = {
-	"Bank Front",
-	"Bank Inside",
-	"Criminal Base",
-	"Prison In",
-	"Prison Out",
-	"ServerRoom Front",
-	"ServerRoom Inside",
-	"Donut Store",
-};
-local teleportLocations = {
-	["Bank Front"] = CFrame.new(-1845.477, 7.526, -1404.931);
-	["Bank Inside"] = CFrame.new(-1845.477, 7.526, -1468.182);
-	["Criminal Base"] = CFrame.new(-4551.763, 9.149, -787.026);
-	["Prison In"] = CFrame.new(-1676.572, 9.494, -2856.954);
-	["Prison Out"] = CFrame.new(-1676.572, 9.494, -2679.17);
-	["ServerRoom Front"] = CFrame.new(-1985.152, 9.494, -1848.291);
-	["ServerRoom Inside"] = CFrame.new(-1985.152, 9.494, -1711.039);
-	["Donut Store"] = CFrame.new(-1969.121, 6.255, -1449.316);
-}
-local guns = {
-	"Pistole",
-	"Rifle"
-}
-
-localPlayer:NewToggle("Auto Breakout", "Automatically breaks you out of your Handcuffs!", function(state)
-	if state then
-		repeat
-			wait(1)
-			if player.Character.Humanoid.WalkSpeed == 0 then
-				game.ReplicatedStorage.Remotes.Server.VerifyAction:FireServer("Breakout", {player.Character.HumanoidRootPart})
-			end
-		until state == false
+local function nearestVehicle()
+	getAllVehicles()
+	local closest, seat = math.huge, nil
+	for i, v in pairs(vehicles) do
+		local newMag = (v.Position - player.Character.HumanoidRootPart.Position).Magnitude
+		if newMag < closest then
+			closest = newMag
+			seat = v
+		end
 	end
-end)
+	return {seat}
+end
 
-localPlayer:NewButton("Taze Bypass", "Doesnt Ragdoll you on Taze!", function()
-	player.Character:FindFirstChild("RagdollMe"):Destroy()
-end)
+local function tweento(part, pos, speed, cframe)
+	local velocity = Instance.new("BodyVelocity", part)
+	velocity.Name = "nil"
+	velocity.Velocity = Vector3.new(0,0,0)
+	
+	if part:FindFirstChild("Humanoid") then
+		game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
+		game.Players.LocalPlayer.Character.Humanoid.Jump = true
+	end
+	
+	local calculation = (part.Position - pos).Magnitude / (speed + 1)
+	local Tween = TweenService:Create(part, TweenInfo.new(calculation, Enum.EasingStyle.Linear), {CFrame = cframe})
+	Tween:Play()
+	wait(calculation + .5)
+	velocity:Destroy()
+end
 
-localPlayer:NewButton("Noclip", "Allows you to walk through Objects!", function()
-	local Clip = false
-	local function NoclipLoop()
-		if Clip == false and player.Character ~= nil then
-			for _, child in pairs(player.Character:GetDescendants()) do
-				if child:IsA("BasePart") and child.CanCollide == true then--and child.Name ~= floatName then
-					child.CanCollide = false
+local function getObjectNear(location)
+	local closest, object = math.huge, nil
+	for i, v in pairs(workspace:GetChildren()) do
+		if v:IsA("BasePart") then
+			local mag = (v.Position - location).Magnitude
+			if mag < closest then
+				closest = mag
+				object = v
+			end
+		end
+	end
+	return object
+end
+
+local function findMainTrainCar()
+	if workspace:FindFirstChild("Trains") then
+		for i, v in pairs(workspace:FindFirstChild("Trains"):GetChildren()) do
+			if v.Name == "MainCar" then
+				return v
+			end
+		end
+	else
+		return
+	end
+end
+
+local function encryptTrain()
+	if workspace:FindFirstChild("Trains") then
+		for i, v in pairs(workspace:FindFirstChild("Trains"):GetChildren()) do
+			if v.Name == "MainCar" then
+				v.Name = "NotRelevant"
+			end
+		end
+	else
+		return
+	end
+end
+
+local function checkForOpenStores()
+	local serverRoomLever = getObjectNear(Vector3.new(-1994.646, 6.431, -1798.945))
+	local donutStoreRegister = getObjectNear(Vector3.new(-1969.333, 6.029, -1452.909))
+	if serverRoomLever.Action.Value == "OpenVault" or workspace.Servers.Union:FindFirstChild("Value") == "ServerHack" then
+		local function checkServers()
+			for i, v in pairs(workspace.Servers:GetChildren()) do
+				if v.Action.Value == "nil" then
+					return false
+				else
+					return true
 				end
 			end
 		end
+		if checkServers() then
+			return "ServerRoomServers"
+		else
+			return "ServerRoomLever"
+		end
+	elseif workspace:FindFirstChild("Trains") and #workspace:FindFirstChild("Trains"):GetChildren() > 0 then
+		if workspace:FindFirstChild("Trains"):FindFirstChild("MainCar") then
+			return "TrainMainCar"
+		else
+			print("Scam Train, skipping.")
+		end
+	elseif donutStoreRegister.Action.Value == "RobDonutStore" then
+		print("xd")
+		return "DonutStore"
+	else
+		return "AllStoresClosed"
 	end
-	local Noclipping = game:GetService('RunService').Stepped:Connect(NoclipLoop)
-end)
+end
 
-localPlayer:NewButton("Grab All Guns", "Grabs all Guns the game has!", function()
-	local currentPosition = player.Character.HumanoidRootPart.CFrame
-	for i, v in pairs(workspace:GetChildren()) do
-		if table.find(guns, v.Name) then
-			player.Character.HumanoidRootPart.CFrame = CFrame.new(v.Position)
-			wait(.5)
-			local mag = (player.Character.HumanoidRootPart.Position - v.Position).Magnitude
-			if mag < 8 then
-				game.ReplicatedStorage.Remotes.Server.VerifyAction:FireServer("GrabGun", {v})
+local function enterVehicle(findVehicle)
+	fetchKeybind("EnterVehicle", findVehicle)
+end
+
+local function vehicle()
+	repeat
+		local findVehicle = nearestVehicle()
+		tweento(player.Character.HumanoidRootPart, findVehicle[1].Position, 25, findVehicle[1].CFrame)
+		enterVehicle(findVehicle)
+		wait()
+	until player.Character.Humanoid.SeatPart ~= nil
+end
+
+for i, v in pairs(workspace:GetChildren()) do
+	if v:FindFirstChild("Script") then
+		v.Position = Vector3.new(0,0,0)
+	end
+end
+
+while true do
+	if player.Team == game.Teams.Prisoner then
+		-- Escaping!
+		local findVehicle = nearestVehicle()
+		vehicle()
+		wait()
+		local primPart = findVehicle[1].Parent
+		if primPart then
+			primPart:SetPrimaryPartCFrame(CFrame.new(-2194, 61.45, -1448))
+		end
+	end
+	local value = checkForOpenStores()
+	if value == "ServerRoomServers" then
+		local server = getObjectNear(Vector3.new(-2001.215, 6.977, -1699.972))
+		local findVehicle = nearestVehicle()
+		vehicle()
+		local primPart = findVehicle[1].Parent
+		if primPart then
+			primPart:SetPrimaryPartCFrame(CFrame.new(-2030, 18.5, -1672))
+		end
+		player.Character.Humanoid.Jump = true
+		tweento(player.Character.HumanoidRootPart, Vector3.new(-2001.215, 6.977, -1699.972), 25, CFrame.new(-2001.215, 6.977, -1699.972))
+		fetchKeybind("ServerHack", {server})
+		wait()
+		local getServerRoomRobberyGui = player.PlayerGui.Game.ServerRobbery
+		if getServerRoomRobberyGui then
+			for i = 6,0,-1 do
+				wait(.25)
+				game.ReplicatedStorage.Remotes.Server.VerifyPassword:FireServer(getServerRoomRobberyGui.Password.Text)
+			end
+		end
+		wait(1)
+		local findVehicle = nearestVehicle()
+		vehicle()
+		wait()
+		local primPart = findVehicle[1].Parent
+		if primPart then
+			primPart:SetPrimaryPartCFrame(CFrame.new(-2242, 562.146, -1702))
+		end
+	elseif value == "ServerRoomLever" then
+		local lever = getObjectNear(Vector3.new(-1994.646, 6.431, -1798.945))
+		local findVehicle = nearestVehicle()
+		vehicle()
+		local primPart = findVehicle[1].Parent
+		if primPart then
+			primPart:SetPrimaryPartCFrame(CFrame.new(-1988.97, 6.807, -1869.442))
+		end
+		wait(1)
+		player.Character.Humanoid.Jump = true
+		tweento(player.Character.HumanoidRootPart, Vector3.new(-1994.646, 6.431, -1798.945), 25, CFrame.new(-1994.646, 6.431, -1798.945))
+		fetchKeybind("OpenVault", {lever})
+		-- ServerRoom
+		local server = getObjectNear(Vector3.new(-2001.215, 8.977, -1720.282))
+		tweento(player.Character.HumanoidRootPart, Vector3.new(-2001.215, 8.977, -1720.282), 25, CFrame.new(-2001.215, 8.977, -1720.2822))
+		wait()
+		fetchKeybind("ServerHack", {server})
+		wait()
+		local getServerRoomRobberyGui = player.PlayerGui.Game.ServerRobbery
+		if getServerRoomRobberyGui then
+			for i = 5,0,-1 do
+				wait(1)
+				game.ReplicatedStorage.Remotes.Server.VerifyPassword:FireServer(getServerRoomRobberyGui.Password.Text)
+			end
+		end
+		wait(1)
+		-- Crim Base
+		
+		local findVehicle = nearestVehicle()
+		vehicle()
+		wait()
+		local primPart = findVehicle[1].Parent
+		if primPart then
+			primPart:SetPrimaryPartCFrame(CFrame.new(-1579.709, 16.922, 425.595))
+		end
+		
+		-- Plate
+		local findVehicle = nearestVehicle()
+		vehicle()
+		wait()
+		local primPart = findVehicle[1].Parent
+		if primPart then
+			primPart:SetPrimaryPartCFrame(CFrame.new(-2242, 562.146, -1702))
+		end
+	elseif value == "TrainMainCar" then
+		wait(15)
+		local mainCar = findMainTrainCar()
+		local findVehicle = nearestVehicle()
+		vehicle()
+		wait()
+		local primPart = findVehicle[1].Parent
+		if primPart then
+			primPart:SetPrimaryPartCFrame(CFrame.new(mainCar.Model.RobPart.Position))
+		end
+		wait()
+		player.Character.Humanoid.Jump = true
+		wait()
+		player.Character.HumanoidRootPart.CFrame = CFrame.new(mainCar.Model.RobPart.Position)
+		wait(1)
+		for i = 21,0,-1 do
+			wait()
+			trainRobbery:fetch("RobTrain", true)
+		end
+		wait(.5)
+		vehicle()
+		local primPart = findVehicle[1].Parent
+		if primPart then
+			primPart:SetPrimaryPartCFrame(CFrame.new(-1579.709, 16.922, 425.595))
+		end
+		encryptTrain()
+	elseif value == "DonutStore" then
+		local findVehicle = nearestVehicle()
+		vehicle()
+		wait()
+		local primPart = findVehicle[1].Parent
+		if primPart then
+			primPart:SetPrimaryPartCFrame(CFrame.new(-1970, 12.807, -1398))
+		end
+		player.Character.Humanoid.Jump = true
+		tweento(player.Character.HumanoidRootPart, Vector3.new(-1969.333, 6.029, -1452.909), 25, CFrame.new(-1969.333, 6.029, -1452.909))
+		local donutStoreRegister = getObjectNear(Vector3.new(-1969.333, 6.029, -1452.909))
+		fetchKeybind("RobDonutStore", {donutStoreRegister})
+	else
+		if workspace:FindFirstChild("SkyPlatformAutoRob") then
+			local findVehicle = nearestVehicle()
+			vehicle()
+			wait()
+			local primPart = findVehicle[1].Parent
+			if primPart then
+				primPart:SetPrimaryPartCFrame(CFrame.new(-2242, 562.146, -1702))
+			end
+		else
+			local plate = Instance.new("Part", workspace)
+			plate.Size = Vector3.new(66.33, 2.013, 77.398)
+			plate.Position = Vector3.new(-2241.335, 546.64, -1701.126)
+			plate.Anchored = true
+			wait()
+			local magnitude = (Vector3.new(-2241.335, 546.64, -1701.126) - player.Character.HumanoidRootPart.Position).Magnitude
+			if magnitude > 50 then
+				local findVehicle = nearestVehicle()
+				vehicle()
+				wait()
+				local primPart = findVehicle[1].Parent
+				if primPart then
+					primPart:SetPrimaryPartCFrame(CFrame.new(-2242, 562.146, -1702))
+				end
+			else
+				local findVehicle = nearestVehicle()
+				vehicle()
 			end
 		end
 	end
-	player.Character.HumanoidRootPart.CFrame = currentPosition
-end)
-
-localPlayer:NewSlider("WalkSpeed", "Sets your Speed to the chosen number", 250, 16, function(s)
-	game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
-end)
-
-localPlayer:NewSlider("JumpPower", "Sets your Jump Power to the chosen number", 500, 50, function(s)
-	game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
-end)
-
-teleportsTab:NewDropdown("Teleports", "Teleports you to certain Locations", teleports, function(currentOption)
-	if teleportLocations[currentOption] then
-		teleport(teleportLocations[currentOption])
-	end
-end)
-
-mainSec:NewButton("Remove Lasers", "Deletes all Lasers in the Server!", function()
-	for i, v in pairs(workspace:GetChildren()) do
-		if v:FindFirstChild("Script") and v:FindFirstChild("Script").Name == "Laser" then
-			v:Destroy()
-		end
-	end
-end)
-
-mainSec:NewButton("Remove Doors", "Deletes all Doors in the Server!", function()
-	for i, v in pairs(workspace:GetChildren()) do
-		if v:FindFirstChild("Script") and v:FindFirstChild("Script").Name == "Script" then
-			v:Destroy()
-		end
-	end
-end)
+	wait(1)
+end
