@@ -1,0 +1,26 @@
+local function decryptKey(key)
+	local tab = {
+		["D3Wz8w"] = 1;
+		["cwQE7x"] = 2;
+		["vC8SaV"] = 3;
+		["6VHbNh"] = 4;
+		["HLM9sX"] = 5;
+		["6gWvne"] = 6;
+		["5K57eF"] = 7;
+		["M6PfD8"] = 8;
+		["2NgcPk"] = 9;
+		["QF5pEZ"] = 0;
+	};
+	local Time = tonumber(tab[key:sub(1, 6)] .. tab[key:sub(7, 12)] .. tab[key:sub(13, 18)] .. tab[key:sub(19, 24)] .. tab[key:sub(25, 30)] .. tab[key:sub(31, 36)] .. tab[key:sub(37, 42)] .. tab[key:sub(43, 48)] .. tab[key:sub(49, 54)] .. tab[key:sub(55, 60)])
+	if Time > os.time() then
+		return true
+	else
+		return false
+	end
+end
+
+if decryptKey(_G.LicenseKey) then
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/bitsplode/PrisonBreakHub/main/MainHub"))();
+else
+	game.Players.LocalPlayer:Kick("Key Expired.")
+end
