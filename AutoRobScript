@@ -1,0 +1,125 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("DarkHub", "Midnight")
+local player = game.Players.LocalPlayer
+
+local nilinstances = {};
+
+local function teleport(X,Y,Z)
+	if Y == nil and Z == nil then
+		player.Character.HumanoidRootPart.CFrame = X
+	else
+		player.Character.HumanoidRootPart.CFrame = CFrame.new(X, Y, Z)
+	end
+end
+
+local function findNilInstance(name)
+	for i, v in pairs(nilinstances) do
+		if v.Name == name then
+			return v
+		end
+	end
+end
+
+local MainTab = Window:NewTab("Main")
+local localPlayer = MainTab:NewSection("LocalPlayer")
+local teleportsTab = MainTab:NewSection("Teleports")
+local mainSec = MainTab:NewSection("Game")
+
+local teleports = {
+	"Bank Front",
+	"Bank Inside",
+	"Criminal Base",
+	"Prison In",
+	"Prison Out",
+	"ServerRoom Front",
+	"ServerRoom Inside",
+	"Donut Store",
+};
+local teleportLocations = {
+	["Bank Front"] = CFrame.new(-1845.477, 7.526, -1404.931);
+	["Bank Inside"] = CFrame.new(-1845.477, 7.526, -1468.182);
+	["Criminal Base"] = CFrame.new(-4551.763, 9.149, -787.026);
+	["Prison In"] = CFrame.new(-1676.572, 9.494, -2856.954);
+	["Prison Out"] = CFrame.new(-1676.572, 9.494, -2679.17);
+	["ServerRoom Front"] = CFrame.new(-1985.152, 9.494, -1848.291);
+	["ServerRoom Inside"] = CFrame.new(-1985.152, 9.494, -1711.039);
+	["Donut Store"] = CFrame.new(-1969.121, 6.255, -1449.316);
+}
+local guns = {
+	"Pistole",
+	"Rifle"
+}
+
+localPlayer:NewToggle("Auto Breakout", "Automatically breaks you out of your Handcuffs!", function(state)
+	if state then
+		repeat
+			wait(1)
+			if player.Character.Humanoid.WalkSpeed == 0 then
+				game.ReplicatedStorage.Remotes.Server.VerifyAction:FireServer("Breakout", {player.Character.HumanoidRootPart})
+			end
+		until state == false
+	end
+end)
+
+localPlayer:NewButton("Taze Bypass", "Doesnt Ragdoll you on Taze!", function()
+	player.Character:FindFirstChild("RagdollMe"):Destroy()
+end)
+
+localPlayer:NewButton("Noclip", "Allows you to walk through Objects!", function()
+	local Clip = false
+	local function NoclipLoop()
+		if Clip == false and player.Character ~= nil then
+			for _, child in pairs(player.Character:GetDescendants()) do
+				if child:IsA("BasePart") and child.CanCollide == true then--and child.Name ~= floatName then
+					child.CanCollide = false
+				end
+			end
+		end
+	end
+	local Noclipping = game:GetService('RunService').Stepped:Connect(NoclipLoop)
+end)
+
+localPlayer:NewButton("Grab All Guns", "Grabs all Guns the game has!", function()
+	local currentPosition = player.Character.HumanoidRootPart.CFrame
+	for i, v in pairs(workspace:GetChildren()) do
+		if table.find(guns, v.Name) then
+			player.Character.HumanoidRootPart.CFrame = CFrame.new(v.Position)
+			wait(.5)
+			local mag = (player.Character.HumanoidRootPart.Position - v.Position).Magnitude
+			if mag < 8 then
+				game.ReplicatedStorage.Remotes.Server.VerifyAction:FireServer("GrabGun", {v})
+			end
+		end
+	end
+	player.Character.HumanoidRootPart.CFrame = currentPosition
+end)
+
+localPlayer:NewSlider("WalkSpeed", "Sets your Speed to the chosen number", 250, 16, function(s)
+	game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
+end)
+
+localPlayer:NewSlider("JumpPower", "Sets your Jump Power to the chosen number", 500, 50, function(s)
+	game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
+end)
+
+teleportsTab:NewDropdown("Teleports", "Teleports you to certain Locations", teleports, function(currentOption)
+	if teleportLocations[currentOption] then
+		teleport(teleportLocations[currentOption])
+	end
+end)
+
+mainSec:NewButton("Remove Lasers", "Deletes all Lasers in the Server!", function()
+	for i, v in pairs(workspace:GetChildren()) do
+		if v:FindFirstChild("Script") and v:FindFirstChild("Script").Name == "Laser" then
+			v:Destroy()
+		end
+	end
+end)
+
+mainSec:NewButton("Remove Doors", "Deletes all Doors in the Server!", function()
+	for i, v in pairs(workspace:GetChildren()) do
+		if v:FindFirstChild("Script") and v:FindFirstChild("Script").Name == "Script" then
+			v:Destroy()
+		end
+	end
+end)
