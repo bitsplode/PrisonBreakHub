@@ -37,7 +37,7 @@ local function tweento(part, pos, speed, cframe)
 		game.Players.LocalPlayer.Character.Humanoid.Jump = true
 	end
 	
-	local calculation = (part.Position - pos).Magnitude / (speed + 1)
+	local calculation = (part.Position - pos).Magnitude / (speed)
 	local Tween = TweenService:Create(part, TweenInfo.new(calculation, Enum.EasingStyle.Linear), {CFrame = cframe})
 	Tween:Play()
 	wait(calculation + .5)
