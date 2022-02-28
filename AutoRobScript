@@ -241,7 +241,8 @@ while true do
 		wait(1)
 		for i = 50,0,-1 do
 			wait(.5)
-			player.Character.HumanoidRootPart.CFrame = CFrame.new(mainCar.Model.RobPart.Position)		end
+			player.Character.HumanoidRootPart.CFrame = CFrame.new(mainCar.Model.RobPart.Position)		
+		end
 		wait(.5)
 		vehicle()
 		local primPart = findVehicle[1].Parent
@@ -257,6 +258,7 @@ while true do
 		if primPart then
 			primPart:SetPrimaryPartCFrame(CFrame.new(-1970, 12.807, -1398))
 		end
+		wait(1)
 		player.Character.Humanoid.Jump = true
 		tweento(player.Character.HumanoidRootPart, Vector3.new(-1969.333, 6.029, -1452.909), 25, CFrame.new(-1969.333, 6.029, -1452.909))
 		local donutStoreRegister = getObjectNear(Vector3.new(-1969.333, 6.029, -1452.909))
