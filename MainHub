@@ -1,8 +1,103 @@
 local library = loadstring(game:HttpGet("https://pastebin.com/raw/3AM83TSG"))();
+local TweenService = game:GetService("TweenService")
+local vehicles = {}
+local player = game.Players.LocalPlayer
+
+local function getAllVehicles()
+	for i, v in pairs(workspace:GetChildren()) do
+		if v:FindFirstChild("PacketID") and v.Name == "Camaro" then
+			table.insert(vehicles, v.DriveSeat)
+		end
+	end
+end
+
+local function getKeybindRemote()
+	for i, v in pairs(game.ReplicatedStorage.Remotes.Server:GetChildren()) do
+		if v.Name:sub(15, 15) == "4" then
+			return v
+		end
+	end
+end
+
+local function getTrainRobRemote()
+	for i, v in pairs(game.ReplicatedStorage.Remotes.Server:GetChildren()) do
+		if v.Name:sub(15, 15) == "8" then
+			return v
+		end
+	end
+end
+
+local function nearestVehicle()
+	getAllVehicles()
+	local closest, seat = math.huge, nil
+	for i, v in pairs(vehicles) do
+		local newMag = (v.Position - player.Character.HumanoidRootPart.Position).Magnitude
+		if newMag < closest then
+			closest = newMag
+			seat = v
+		end
+	end
+	return {seat}
+end
+
+local function tweento(part, pos, speed, cframe)
+	local velocity = Instance.new("BodyVelocity", part)
+	velocity.Name = "nil"
+	velocity.Velocity = Vector3.new(0,0,0)
+
+	if part:FindFirstChild("Humanoid") then
+		game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
+		game.Players.LocalPlayer.Character.Humanoid.Jump = true
+	end
+
+	local calculation = (part.Position - pos).Magnitude / (speed + 1)
+	local Tween = TweenService:Create(part, TweenInfo.new(calculation, Enum.EasingStyle.Linear), {CFrame = cframe})
+	Tween:Play()
+	wait(calculation + .5)
+	velocity:Destroy()
+end
+
+local function enterVehicle(findVehicle)
+	getKeybindRemote():FireServer("EnterVehicle", findVehicle)
+end
+
+local function vehicle()
+	repeat
+		local findVehicle = nearestVehicle()
+		tweento(player.Character.HumanoidRootPart, findVehicle[1].Position, 25, findVehicle[1].CFrame)
+		enterVehicle(findVehicle)
+		wait()
+	until player.Character.Humanoid.SeatPart ~= nil
+end
 
 local Gamer = library:CreateSection("Farming");
 Gamer:Button("AutoRob", function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/bitsplode/PrisonBreakHub/main/AutoRobScript"))();
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/bitsplode/PrisonBreakHub/blob/main/AutoRobScript"))();
+end)
+
+Gamer:Button("Auto Breakout", function()
+	spawn(function()
+		while wait() do
+			if game.Players.LocalPlayer.Character.Humanoid.WalkSpeed == 0 then
+				getKeybindRemote():FireServer("Breakout", {game.Players.LocalPlayer.Character.HumanoidRootPart})
+			end
+		end
+	end)
+end)
+
+Gamer:Button("XP AutoFarm", function() -- -1899.092, 22.789, -566.985
+	spawn(function()
+		vehicle()
+		wait(.5)
+		local primPart = nearestVehicle()[1].Parent
+		if primPart then
+			primPart:SetPrimaryPartCFrame(CFrame.new(-2030, 18.5, -1672))
+		end
+		wait(1)
+		while wait() do
+			getTrainRobRemote():FireServer("local function getKeybindRemote() for i, v in pairs(game.ReplicatedStorage.Remotes.Server:GetChildren()) do if v.Name:sub(15, 15) == "..  4 .." then return v end end end")
+		end
+	end)
 end)
 
 library:Ready();
