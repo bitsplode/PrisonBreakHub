@@ -1,7 +1,7 @@
 local TweenService = game:GetService("TweenService")
-local trainRobbery = require(game.ReplicatedStorage.Module.TrainRobbery)
 local player = game.Players.LocalPlayer
 local vehicles = {}
+local keybindRemote
 local function getAllVehicles()
 	for i, v in pairs(workspace:GetChildren()) do
 		if v:FindFirstChild("PacketID") and v.Name == "Camaro" then
@@ -10,8 +10,17 @@ local function getAllVehicles()
 	end
 end
 
+local function findCorrectRemote()
+	for i, v in pairs(game.ReplicatedStorage.Remotes.Server:GetChildren()) do
+		if v.Name:sub(15, 15) == "4" then
+			return v
+		end
+	end
+end
+
 local function fetchKeybind(action, packet)
-	game.ReplicatedStorage.Remotes.Server.VerifyAction:FireServer(action, packet)
+	keybindRemote = findCorrectRemote()
+	keybindRemote:FireServer(action, packet)
 end
 
 local function nearestVehicle()
@@ -37,7 +46,7 @@ local function tweento(part, pos, speed, cframe)
 		game.Players.LocalPlayer.Character.Humanoid.Jump = true
 	end
 	
-	local calculation = (part.Position - pos).Magnitude / (speed)
+	local calculation = (part.Position - pos).Magnitude / (speed + 1)
 	local Tween = TweenService:Create(part, TweenInfo.new(calculation, Enum.EasingStyle.Linear), {CFrame = cframe})
 	Tween:Play()
 	wait(calculation + .5)
@@ -229,12 +238,10 @@ while true do
 		wait()
 		player.Character.Humanoid.Jump = true
 		wait()
-		player.Character.HumanoidRootPart.CFrame = CFrame.new(mainCar.Model.RobPart.Position)
 		wait(1)
-		for i = 21,0,-1 do
-			wait()
-			trainRobbery:fetch("RobTrain", true)
-		end
+		for i = 50,0,-1 do
+			wait(.5)
+			player.Character.HumanoidRootPart.CFrame = CFrame.new(mainCar.Model.RobPart.Position)		end
 		wait(.5)
 		vehicle()
 		local primPart = findVehicle[1].Parent
