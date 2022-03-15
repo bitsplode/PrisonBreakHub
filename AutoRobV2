@@ -193,6 +193,7 @@ Page.DataTable({
 									local s, e = pcall(function()
 										player.Character.HumanoidRootPart.CFrame = CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position)
 									end)
+									if s then else break end
 								until moneyCollected ~= 0
 								wait(1)
 								repeat
