@@ -1,6 +1,9 @@
 local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/MaterialLua/master/Module.lua"))()
+local player = game.Players.LocalPlayer
 
-_G.Stats = {}
+_G.Stats = {
+	AutoRobSpeed = 25;
+}
 
 local UI = Material.Load({
 	Title = "AutoRob",
@@ -35,7 +38,6 @@ Page.DataTable({
 		for i, v in pairs(dt) do
 			if i == "AutoRob" and v == true then
 				local TweenService = game:GetService("TweenService")
-				local player = game.Players.LocalPlayer
 				local vehicles = {}
 				local moneyCollected, maxAmount = 0, 0
 				local keybindRemote
@@ -192,11 +194,10 @@ Page.DataTable({
 								wait(1)
 								repeat
 									wait(.5)
-									print(moneyCollected, maxAmount)
 								until moneyCollected >= maxAmount
-								local vehicle = enterNearestVehicle()
+								local vehicle2 = enterNearestVehicle()
 								wait(.5)
-								carTeleport(vehicle, CFrame.new(-1579.709, 16.922, 425.595))
+								carTeleport(vehicle2, CFrame.new(-1579.709, 16.922, 425.595))
 								encryptTrain()
 								repeat
 									fetchTrain("CollectMoney")
@@ -298,3 +299,31 @@ Page.DataTable({
 		},
 	}
 })
+
+local updatePacket = loadstring(game:HttpGet("https://raw.githubusercontent.com/bitsplode/PrisonBreakHub/main/Updater"))()
+spawn(function()
+	while wait() do
+		updatePacket = loadstring(game:HttpGet("https://raw.githubusercontent.com/bitsplode/PrisonBreakHub/main/Updater"))()
+		if updatePacket.V == game.PlaceId then
+			player:Kick()
+		end
+		
+		if updatePacket.Maintenance then
+			player:Kick("Script Maintenanced!")
+		end
+	end
+end)
+
+for i, v in pairs(updatePacket.ImportantPlayers) do
+	game.Players.PlayerAdded:Connect(function(plr)
+		if plr.UserId == v and plr.UserId ~= player.UserId then
+			player:Kick()
+		end
+	end)
+end
+
+for i, v in pairs(game.Players:GetPlayers()) do
+	if table.find(updatePacket.ImportantPlayers, v.UserId) and v.UserId ~= player.UserId then
+		player:Kick()
+	end
+end
