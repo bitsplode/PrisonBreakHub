@@ -34,3 +34,10 @@ Page.Button({
 		end
 	end
 })
+
+Page.Button({
+	Text = "Purchase Key [SOON!]",
+	Callback = function()
+		
+	end
+})
