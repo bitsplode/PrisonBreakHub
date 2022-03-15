@@ -1,0 +1,300 @@
+local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/MaterialLua/master/Module.lua"))()
+
+_G.Stats = {}
+
+local UI = Material.Load({
+	Title = "AutoRob",
+	Style = 3,
+	SizeX = 400,
+	SizeY = 300,
+	Theme = "Light"
+})
+
+local Page = UI.New({
+	Title = "Main"
+})
+
+UI.Banner({
+	Text = "If you get banned with this script, it's not our fault, but you can report the bug that got you banned on our Discord server!"
+})
+
+Page.Slider({
+	Text = "AutoRob Speed (25 Recomended!)!",
+	Callback = function(value)
+		_G.Stats["AutoRobSpeed"] = value
+	end,
+	Min = 20,
+	Max = 40,
+	Def = 25,
+})
+
+Page.DataTable({
+	Text = "Data",
+	Callback = function(dt)
+		print('Data changed!')
+		for i, v in pairs(dt) do
+			if i == "AutoRob" and v == true then
+				local TweenService = game:GetService("TweenService")
+				local player = game.Players.LocalPlayer
+				local vehicles = {}
+				local moneyCollected, maxAmount = 0, 0
+				local keybindRemote
+				local trainRemote
+				
+				game.ReplicatedStorage.Remotes.Client.RobberyGui.OnClientEvent:Connect(function(name, c, m)
+					moneyCollected = c
+					maxAmount = m
+				end)
+				
+				local function getAllVehicles()
+					for i, v in pairs(workspace:GetChildren()) do
+						if v:FindFirstChild("PacketID") and v.Name == "Camaro" then
+							table.insert(vehicles, v.DriveSeat)
+						end
+					end
+				end
+				
+				local function findCorrectRemote()
+					for i, v in pairs(game.ReplicatedStorage.Remotes.Server:GetChildren()) do
+						if v.Name:sub(15, 15) == "4" then
+							return v
+						end
+					end
+				end
+				
+				local function findCorrectTrainRemote()
+					for i, v in pairs(game.ReplicatedStorage.Remotes.Server:GetChildren()) do
+						if v.Name:sub(15, 15) == "8" then
+							return v
+						end
+					end
+				end
+				
+				local function tweento(part, pos, speed, cframe)
+					local velocity = Instance.new("BodyVelocity", part)
+					velocity.Name = "nil"
+					velocity.Velocity = Vector3.new(0,0,0)
+					
+					if part:FindFirstChild("Humanoid") then
+						game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
+						game.Players.LocalPlayer.Character.Humanoid.Jump = true
+					end
+					
+					local calculation = (part.Position - pos).Magnitude / (speed + 1)
+					local Tween = TweenService:Create(part, TweenInfo.new(calculation, Enum.EasingStyle.Linear), {CFrame = cframe})
+					Tween:Play()
+					wait(calculation + .5)
+					velocity:Destroy()
+				end
+				
+				local function fetchKeybind(action, packet)
+					keybindRemote = findCorrectRemote()
+					keybindRemote:FireServer(action, packet)
+				end
+				
+				local function fetchTrain(action)
+					if action == "CollectMoney" or action == "RobTrain" then
+						trainRemote = findCorrectTrainRemote()
+						trainRemote:FireServer(action)
+					end
+				end
+				
+				local function enterNearestVehicle()
+					local function nearestVehicle()
+						getAllVehicles()
+						local closest, vehicle = math.huge, nil
+						for i, v in pairs(vehicles) do
+							local newMag = (v.Position - player.Character.HumanoidRootPart.Position).Magnitude
+							if newMag < closest then
+								closest = newMag
+								vehicle = v.Parent
+							end
+						end
+						return vehicle
+					end
+					
+					local findVehicle
+					repeat
+						findVehicle = nearestVehicle()
+						if findVehicle ~= nil then
+							tweento(player.Character.HumanoidRootPart, findVehicle:FindFirstChildOfClass("VehicleSeat").Position, 25, findVehicle:FindFirstChildOfClass("VehicleSeat").CFrame)
+							fetchKeybind("EnterVehicle", {findVehicle:FindFirstChildOfClass("VehicleSeat")})
+						end
+						wait(.5)
+					until player.Character.Humanoid.SeatPart ~= nil
+					return findVehicle
+				end
+				
+				local function carTeleport(vehicle, cframe)
+					if vehicle then
+						vehicle:SetPrimaryPartCFrame(cframe)
+					end
+					wait(.5)
+				end
+				
+				local function encryptTrain()
+					if workspace:FindFirstChild("Trains") then
+						for i, v in pairs(workspace:FindFirstChild("Trains"):GetChildren()) do
+							if v.Name == "MainCar" then
+								v.Name = "NotRelevant"
+							end
+						end
+					else
+						return
+					end
+				end
+				
+				
+				local function checkForOpenRobberys()
+					local function donutStore()
+						for i, v in pairs(workspace:GetChildren()) do
+							if v:FindFirstChild("Action") then
+								if v:FindFirstChild("Action").Value == "RobDonutStore" then
+									return true, v
+								end
+							end
+						end
+					end
+					
+					local function serverRoom()
+						for i, v in pairs(workspace:GetChildren()) do
+							if v:FindFirstChild("Action") then
+								if v:FindFirstChild("Action").Value == "OpenVault" then
+									return true, v
+								end
+							end
+						end
+					end
+					
+					local function train()
+						for i, v in pairs(workspace:FindFirstChild("Trains"):GetChildren()) do
+							if v.Name == "MainCar" then
+								return true, v
+							end
+						end
+					end
+					
+					-- EXECUTING FUNCTIONS
+					
+					local train, car = train();
+					local donut, register = donutStore();
+					local server, lever = serverRoom();
+					if train then
+						if car:FindFirstChild("Model") then
+							if car:FindFirstChild("Model"):FindFirstChild("RobPart") then
+								local vehicle = enterNearestVehicle()
+								carTeleport(vehicle, CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position))
+								player.Character.Humanoid.Jump = true
+								repeat
+									wait()
+									player.Character.HumanoidRootPart.CFrame = CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position)
+								until moneyCollected ~= 0
+								wait(1)
+								repeat
+									wait(.5)
+									print(moneyCollected, maxAmount)
+								until moneyCollected >= maxAmount
+								local vehicle = enterNearestVehicle()
+								wait(.5)
+								carTeleport(vehicle, CFrame.new(-1579.709, 16.922, 425.595))
+								encryptTrain()
+								repeat
+									fetchTrain("CollectMoney")
+									wait(.5)
+								until moneyCollected == 0
+								return true
+							end
+						end
+					elseif donut then
+						fetchKeybind("RobDonutStore", {register})
+						return true
+					elseif server then
+						fetchKeybind("OpenVault", {lever})
+						local vehicle = enterNearestVehicle()
+						carTeleport(vehicle, CFrame.new(-1985.845, 13.493, -1668.189))
+						wait(1)
+						player.Character.Humanoid.Jump = true
+						tweento(player.Character.HumanoidRootPart, Vector3.new(-1985.845, 7.599, -1716.899), 25, CFrame.new(-1985.845, 7.599, -1716.899))
+						fetchKeybind("ServerHack", {game.Workspace.Servers.Union})
+						local getServerRoomRobberyGui = player.PlayerGui.Game.ServerRobbery
+						if getServerRoomRobberyGui then
+							for i = 5,0,-1 do
+								wait(.5)
+								game.ReplicatedStorage.Remotes.Server.VerifyPassword:FireServer(getServerRoomRobberyGui.Password.Text)
+							end
+						end
+						local vehicle = enterNearestVehicle()
+						carTeleport(vehicle, CFrame.new(-1579.709, 16.922, 425.595))
+						return true
+					end
+				end
+				
+				spawn(function()
+					while wait() do
+						if player.Team == game.Teams.Prisoner then
+							local result = enterNearestVehicle()
+							carTeleport(result, CFrame.new(-1579.709, 16.922, 425.595))
+						end
+						if v == false then 
+							break 
+						end
+						checkForOpenRobberys()
+					end
+				end)
+			elseif i == "AutoBreakout" then
+				spawn(function()
+					local player = game.Players.LocalPlayer
+					local keybindRemote
+					
+					local function findCorrectRemote()
+						for i, v in pairs(game.ReplicatedStorage.Remotes.Server:GetChildren()) do
+							if v.Name:sub(15, 15) == "4" then
+								return v
+							end
+						end
+					end
+					
+					local function fetchKeybind(action, packet)
+						keybindRemote = findCorrectRemote()
+						keybindRemote:FireServer(action, packet)
+					end
+					
+					while wait() do
+						if player.Character then
+							if player.Character:FindFirstChild("Humanoid") then
+								if player.Character:FindFirstChild("Humanoid").WalkSpeed == 0 then
+									fetchKeybind("Breakout", {player.Character.HumanoidRootPart})
+								end
+							end
+						end
+						if v == false then 
+							break 
+						end
+					end
+				end)
+			end
+		end
+	end,
+	Options = {
+		AutoRob = {
+			Enabled = false,
+			Menu = {
+				Information = function(self)
+					UI.Banner({
+						Text = "Robs all the stores in-game for you!"            
+					})
+				end
+			}
+		},
+		AutoBreakout = {
+			Enabled = false,
+			Menu = {
+				Information = function(self)
+					UI.Banner({
+						Text = "Breaks you out of your Handcuffs while being arrested!"            
+					})
+				end
+			}
+		},
+	}
+})
