@@ -1,0 +1,36 @@
+local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/MaterialLua/master/Module.lua"))()
+local key
+
+local UI = Material.Load({
+	Title = "AutoRob",
+	Style = 3,
+	SizeX = 400,
+	SizeY = 300,
+	Theme = "Light"
+})
+
+local Page = UI.New({
+	Title = "Main"
+})
+
+--[[UI.Banner({
+	Text = "If you get banned with this script, it's not our fault, but you can report the bug that got you banned on our Discord server!"
+})]]
+
+Page.TextField({
+	Text = "Whitelist Key [BETA-Trial]",
+	Callback = function(value)
+		key = value
+	end
+})
+
+Page.Button({
+	Text = "Login",
+	Callback = function()
+		if key ~= nil then
+			if key == "2B49A46A-BA23-4BB9-9C24-C6C0EB88D188" then
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/bitsplode/PrisonBreakHub/main/AutoRobV2"))()
+			end
+		end
+	end
+})
