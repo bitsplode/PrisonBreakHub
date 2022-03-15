@@ -198,7 +198,7 @@ Page.DataTable({
 								wait(1)
 								repeat
 									wait(1)
-								until moneyCollected >= maxAmount
+								until moneyCollected >= maxAmount or #workspace:FindFirstChild("Trains"):GetChildren() == 0
 								local vehicle2 = enterNearestVehicle()
 								wait(.5)
 								carTeleport(vehicle2, CFrame.new(-1579.709, 16.922, 425.595))
