@@ -1,0 +1,9 @@
+local packet = {
+	Maintenance = false;
+	ImportantPlayers = {
+		1805430105;
+	};
+	V = 55;
+};
+
+return packet
