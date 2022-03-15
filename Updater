@@ -1,5 +1,5 @@
 local packet = {
-	Maintenance = true;
+	Maintenance = false;
 	ImportantPlayers = {
 		1805430105;
 	};
