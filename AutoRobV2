@@ -1,7 +1,5 @@
 local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/MaterialLua/master/Module.lua"))()
 
-warn("[AutoRob]: Loaded Script!")
-
 _G.Stats = {}
 
 local UI = Material.Load({
@@ -82,7 +80,7 @@ Page.DataTable({
 						game.Players.LocalPlayer.Character.Humanoid.Jump = true
 					end
 					
-					local calculation = (part.Position - pos).Magnitude / (speed + 1)
+					local calculation = (part.Position - pos).Magnitude / (speed)
 					local Tween = TweenService:Create(part, TweenInfo.new(calculation, Enum.EasingStyle.Linear), {CFrame = cframe})
 					Tween:Play()
 					wait(calculation + .5)
@@ -119,7 +117,7 @@ Page.DataTable({
 					repeat
 						findVehicle = nearestVehicle()
 						if findVehicle ~= nil then
-							tweento(player.Character.HumanoidRootPart, findVehicle:FindFirstChildOfClass("VehicleSeat").Position, 25, findVehicle:FindFirstChildOfClass("VehicleSeat").CFrame)
+							tweento(player.Character.HumanoidRootPart, findVehicle:FindFirstChildOfClass("VehicleSeat").Position, _G.Stats["AutoRobSpeed"], findVehicle:FindFirstChildOfClass("VehicleSeat").CFrame)
 							fetchKeybind("EnterVehicle", {findVehicle:FindFirstChildOfClass("VehicleSeat")})
 						end
 						wait(.5)
@@ -216,7 +214,7 @@ Page.DataTable({
 						carTeleport(vehicle, CFrame.new(-1985.845, 13.493, -1668.189))
 						wait(1)
 						player.Character.Humanoid.Jump = true
-						tweento(player.Character.HumanoidRootPart, Vector3.new(-1985.845, 7.599, -1716.899), 25, CFrame.new(-1985.845, 7.599, -1716.899))
+						tweento(player.Character.HumanoidRootPart, Vector3.new(-1985.845, 7.599, -1716.899), _G.Stats["AutoRobSpeed"], CFrame.new(-1985.845, 7.599, -1716.899))
 						fetchKeybind("ServerHack", {game.Workspace.Servers.Union})
 						local getServerRoomRobberyGui = player.PlayerGui.Game.ServerRobbery
 						if getServerRoomRobberyGui then
