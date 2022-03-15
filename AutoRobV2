@@ -193,16 +193,23 @@ Page.DataTable({
 								until moneyCollected ~= 0
 								wait(1)
 								repeat
-									wait(.5)
+									wait(1)
 								until moneyCollected >= maxAmount
+								print("vehicle enter")
 								local vehicle2 = enterNearestVehicle()
+								print(vehicle2)
 								wait(.5)
+								print("Attempting car tp")
 								carTeleport(vehicle2, CFrame.new(-1579.709, 16.922, 425.595))
+								print("car tp success")
 								encryptTrain()
+								print("Encrypted Train")
 								repeat
 									fetchTrain("CollectMoney")
+									print("collect money")
 									wait(.5)
 								until moneyCollected == 0
+								print("done")
 								return true
 							end
 						end
@@ -216,6 +223,7 @@ Page.DataTable({
 						wait(1)
 						player.Character.Humanoid.Jump = true
 						tweento(player.Character.HumanoidRootPart, Vector3.new(-1985.845, 7.599, -1716.899), _G.Stats["AutoRobSpeed"], CFrame.new(-1985.845, 7.599, -1716.899))
+						wait(.5)
 						fetchKeybind("ServerHack", {game.Workspace.Servers.Union})
 						local getServerRoomRobberyGui = player.PlayerGui.Game.ServerRobbery
 						if getServerRoomRobberyGui then
@@ -224,6 +232,7 @@ Page.DataTable({
 								game.ReplicatedStorage.Remotes.Server.VerifyPassword:FireServer(getServerRoomRobberyGui.Password.Text)
 							end
 						end
+						wait(.5)
 						local vehicle = enterNearestVehicle()
 						carTeleport(vehicle, CFrame.new(-1579.709, 16.922, 425.595))
 						return true
