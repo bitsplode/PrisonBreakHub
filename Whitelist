@@ -2,7 +2,7 @@ local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinl
 local key
 
 local UI = Material.Load({
-	Title = "AutoRob",
+	Title = "Whitelist",
 	Style = 3,
 	SizeX = 400,
 	SizeY = 300,
@@ -18,7 +18,7 @@ local Page = UI.New({
 })]]
 
 Page.TextField({
-	Text = "Whitelist Key [BETA-Trial]",
+	Text = "Whitelist Key",
 	Callback = function(value)
 		key = value
 	end
@@ -36,8 +36,8 @@ Page.Button({
 })
 
 Page.Button({
-	Text = "Purchase Key [SOON!]",
+	Text = "Purchase Key",
 	Callback = function()
-		
+		print("2B49A46A-BA23-4BB9-9C24-C6C0EB88D188")
 	end
 })
