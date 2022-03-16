@@ -179,9 +179,7 @@ Page.DataTable({
 					local function train()
 						for i, v in pairs(workspace:FindFirstChild("Trains"):GetChildren()) do
 							if v.Name == "MainCar" then
-								if _G.Stats["TrainSkip"] == false then
-									return true, v
-								end
+								return true, v
 							end
 						end
 					end
@@ -192,32 +190,34 @@ Page.DataTable({
 					local donut, register = donutStore();
 					local server, lever = serverRoom();
 					if train then
-						if car:FindFirstChild("Model") then
-							if car:FindFirstChild("Model"):FindFirstChild("RobPart") then
-								local vehicle = enterNearestVehicle()
-								carTeleport(vehicle, CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position))
-								player.Character.Humanoid.Jump = true
-								repeat
-									wait(.25)
-									print(moneyCollected)
-									local s, e = pcall(function()
-										player.Character.HumanoidRootPart.CFrame = CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position)
-									end)
-									if s then else break end
-								until moneyCollected ~= 0
-								wait(1)
-								repeat
+						if _G.Stats["TrainSkip"] == false then	
+							if car:FindFirstChild("Model") then
+								if car:FindFirstChild("Model"):FindFirstChild("RobPart") then
+									local vehicle = enterNearestVehicle()
+									carTeleport(vehicle, CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position))
+									player.Character.Humanoid.Jump = true
+									repeat
+										wait(.25)
+										print(moneyCollected)
+										local s, e = pcall(function()
+											player.Character.HumanoidRootPart.CFrame = CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position)
+										end)
+										if s then else break end
+									until moneyCollected ~= 0
 									wait(1)
-								until moneyCollected >= maxAmount or #workspace:FindFirstChild("Trains"):GetChildren() == 0
-								local vehicle2 = enterNearestVehicle()
-								wait(.5)
-								carTeleport(vehicle2, CFrame.new(-1579.709, 16.922, 425.595))
-								encryptTrain()
-								repeat
-									fetchTrain("CollectMoney")
+									repeat
+										wait(1)
+									until moneyCollected >= maxAmount or #workspace:FindFirstChild("Trains"):GetChildren() == 0
+									local vehicle2 = enterNearestVehicle()
 									wait(.5)
-								until moneyCollected == 0
-								return true
+									carTeleport(vehicle2, CFrame.new(-1579.709, 16.922, 425.595))
+									encryptTrain()
+									repeat
+										fetchTrain("CollectMoney")
+										wait(.5)
+									until moneyCollected == 0
+									return true
+								end
 							end
 						end
 					elseif donut then
