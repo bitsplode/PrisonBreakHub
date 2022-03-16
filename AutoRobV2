@@ -226,10 +226,11 @@ Page.DataTable({
 							fetchKeybind("RobDonutStore", {register})
 							wait(2)
 							_G.Stats["Robbed"] = false
+							return true
 						elseif _G.Stats["DonutStoreSmall"] then
 							fetchKeybind("RobDonutStore", {register})
+							return true
 						end
-						return true
 					elseif server then
 						fetchKeybind("OpenVault", {lever})
 						local vehicle = enterNearestVehicle()
