@@ -227,7 +227,7 @@ Page.DataTable({
 							wait(2)
 							_G.Stats["Robbed"] = false
 							return true
-						elseif _G.Stats["DonutStoreSmall"] then
+						elseif _G.Stats["DonutStoreSmall"] == false then
 							fetchKeybind("RobDonutStore", {register})
 							return true
 						end
