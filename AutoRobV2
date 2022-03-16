@@ -179,7 +179,7 @@ Page.DataTable({
 					local function train()
 						for i, v in pairs(workspace:FindFirstChild("Trains"):GetChildren()) do
 							if v.Name == "MainCar" then
-								if _G.Stats["TrainSkip"] then
+								if _G.Stats["TrainSkip"] == false then
 									return true, v
 								end
 							end
