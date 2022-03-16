@@ -3,6 +3,9 @@ local player = game.Players.LocalPlayer
 
 _G.Stats = {
 	AutoRobSpeed = 25;
+	DonutStoreSmall = false;
+	TrainSkip = false;
+	Robbed = false;
 }
 
 local UI = Material.Load({
@@ -34,7 +37,12 @@ Page.Slider({
 Page.DataTable({
 	Text = "Data",
 	Callback = function(dt)
-		print('Data changed!')
+		if dt["DonutStore"] then
+			_G.Stats["DonutStoreSmall"] = not _G.Stats["DonutStoreSmall"];
+		end--SkipTrain
+		if dt["SkipTrain"] then
+			_G.Stats["TrainSkip"] = not _G.Stats["TrainSkip"];
+		end--SkipTrain
 		for i, v in pairs(dt) do
 			if i == "AutoRob" and v == true then
 				local TweenService = game:GetService("TweenService")
@@ -171,7 +179,9 @@ Page.DataTable({
 					local function train()
 						for i, v in pairs(workspace:FindFirstChild("Trains"):GetChildren()) do
 							if v.Name == "MainCar" then
-								return true, v
+								if _G.Stats["TrainSkip"] then
+									return true, v
+								end
 							end
 						end
 					end
@@ -211,7 +221,14 @@ Page.DataTable({
 							end
 						end
 					elseif donut then
-						fetchKeybind("RobDonutStore", {register})
+						if _G.Stats["DonutStoreSmall"] and _G.Stats["Robbed"] == false then
+							_G.Stats["Robbed"] = true;
+							fetchKeybind("RobDonutStore", {register})
+							wait(2)
+							_G.Stats["Robbed"] = false
+						elseif _G.Stats["DonutStoreSmall"] then
+							fetchKeybind("RobDonutStore", {register})
+						end
 						return true
 					elseif server then
 						fetchKeybind("OpenVault", {lever})
@@ -292,7 +309,7 @@ Page.DataTable({
 					})
 				end
 			}
-		},
+		};
 		AutoBreakout = {
 			Enabled = false,
 			Menu = {
@@ -302,7 +319,27 @@ Page.DataTable({
 					})
 				end
 			}
-		},
+		};
+		SkipTrain = {
+			Enabled = false,
+			Menu = {
+				Information = function(self)
+					UI.Banner({
+						Text = "Skips the Train in the AutoRob (Train Buggy ATM)!"            
+					})
+				end
+			}
+		};
+		DonutStore = {
+			Enabled = false,
+			Menu = {
+				Information = function(self)
+					UI.Banner({
+						Text = "Only Robs the Donut Shop 1 Time (Less Risky!)"            
+					})
+				end
+			}
+		};
 	}
 })
 
