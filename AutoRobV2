@@ -1,16 +1,16 @@
-if game.PlaceId == 8417632287 then
+local updatePacketLaunch = loadstring(game:HttpGet("https://raw.githubusercontent.com/bitsplode/PrisonBreakHub/main/Updater"))()
+if game.PlaceId == 8417632287 and updatePacketLaunch.V == game.PlaceVersion then
 	local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/MaterialLua/master/Module.lua"))()
+	local lastBankCheck = 0;
 	local player = game.Players.LocalPlayer
 	
 	_G.Stats = {
 		AutoRobSpeed = 25;
-		DonutStoreSmall = false;
-		TrainSkip = false;
 		Robbed = false;
 	}
 	
 	local UI = Material.Load({
-		Title = "AutoRob",
+		Title = "AutoFarm Hub",
 		Style = 3,
 		SizeX = 400,
 		SizeY = 300,
@@ -28,10 +28,23 @@ if game.PlaceId == 8417632287 then
 	Page.Slider({
 		Text = "AutoRob Speed (25 Recomended!)!",
 		Callback = function(value)
-			_G.Stats["AutoRobSpeed"] = value
+			if value <= 250 and value >= 15 then
+				_G.Stats["AutoRobSpeed"] = value
+			else
+				player:Kick([[ [Error: 259 (Blacklist)]
+					You are Blacklisted from using this AutoFarm!
+					
+					Date: ]].. os.date() ..[[
+					Reason: (Speed Spoofing/Value:]].. value ..[[)
+					
+					This blacklist is Permanent and cant be Appealed!
+					You are not banned from Buying another Key!
+				]]
+				)
+			end
 		end,
 		Min = 15,
-		Max = 50,
+		Max = 250,
 		Def = 25,
 	})
 	
@@ -137,9 +150,11 @@ if game.PlaceId == 8417632287 then
 							if findVehicle ~= nil then
 								tweento(player.Character.HumanoidRootPart, findVehicle:FindFirstChildOfClass("VehicleSeat").Position, _G.Stats["AutoRobSpeed"], findVehicle:FindFirstChildOfClass("VehicleSeat").CFrame)
 								fetchKeybind("EnterVehicle", {findVehicle:FindFirstChildOfClass("VehicleSeat")})
+							else
+								findVehicle = nearestVehicle()
 							end
 							wait(.5)
-						until player.Character:FindFirstChild("Humanoid").SeatPart ~= nil or tries >= 70
+						until player.Character:FindFirstChild("Humanoid").SeatPart ~= nil or tries >= 30
 						return findVehicle
 					end
 					
@@ -160,6 +175,20 @@ if game.PlaceId == 8417632287 then
 						else
 							return
 						end
+					end
+					
+					local function getObjectNear(location)
+						local closest, object = math.huge, nil
+						for i, v in pairs(workspace:GetChildren()) do
+							if v:IsA("BasePart") then
+								local mag = (v.Position - location).Magnitude
+								if mag < closest then
+									closest = mag
+									object = v
+								end
+							end
+						end
+						return object
 					end
 					
 					
@@ -198,52 +227,41 @@ if game.PlaceId == 8417632287 then
 						local donut, register = donutStore();
 						local server, lever = serverRoom();
 						if train then
-							if _G.Stats["TrainSkip"] == false then	
-								if car:FindFirstChild("Model") then
-									if car:FindFirstChild("Model"):FindFirstChild("RobPart") then
-										local vehicle = enterNearestVehicle()
-										carTeleport(vehicle, CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position))
-										player.Character.Humanoid.Jump = true
-										local tries = 0
-										repeat
-											wait(.25)
-											tries += 1
-											local s, e = pcall(function()
-												player.Character.HumanoidRootPart.CFrame = CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position)
-											end)
-											if s then else break end
-										until moneyCollected ~= 0 or tries >= 100
-										tries = 0
-										wait(1)
-										repeat
-											wait(.25)
-											tries += 1
-										until moneyCollected >= maxAmount or #workspace:FindFirstChild("Trains"):GetChildren() == 0 or tries >= 40
-										tries = 0
-										local vehicle2 = enterNearestVehicle()
+							if car:FindFirstChild("Model") then
+								if car:FindFirstChild("Model"):FindFirstChild("RobPart") then
+									local vehicle = enterNearestVehicle()
+									carTeleport(vehicle, CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position))
+									player.Character.Humanoid.Jump = true
+									local tries = 0
+									repeat
+										wait(.25)
+										tries += 1
+										local s, e = pcall(function()
+											player.Character.HumanoidRootPart.CFrame = CFrame.new(car:FindFirstChild("Model"):FindFirstChild("RobPart").Position)
+										end)
+										if s then else break end
+									until moneyCollected > 0 or tries >= 100
+									tries = 0
+									wait(1)
+									repeat
+										wait(.25)
+										tries += 1
+									until moneyCollected >= maxAmount or #workspace:FindFirstChild("Trains"):GetChildren() == 0 or tries >= 90
+									tries = 0
+									local vehicle2 = enterNearestVehicle()
+									wait(.5)
+									carTeleport(vehicle2, CFrame.new(-1579.709, 16.922, 425.595))
+									encryptTrain()
+									repeat
+										fetchTrain("CollectMoney")
+										tries += 1
 										wait(.5)
-										carTeleport(vehicle2, CFrame.new(-1579.709, 16.922, 425.595))
-										encryptTrain()
-										repeat
-											fetchTrain("CollectMoney")
-											tries += 1
-											wait(.5)
-										until moneyCollected == 0 or tries >= 40
-										return true
-									end
+									until moneyCollected == 0 or tries >= 40
+									return true
 								end
 							end
 						elseif donut then
-							if _G.Stats["DonutStoreSmall"] and _G.Stats["Robbed"] == false then
-								_G.Stats["Robbed"] = true;
-								fetchKeybind("RobDonutStore", {register})
-								wait(2)
-								_G.Stats["Robbed"] = false
-								return true
-							elseif _G.Stats["DonutStoreSmall"] == false then
-								fetchKeybind("RobDonutStore", {register})
-								return true
-							end
+							fetchKeybind("RobDonutStore", {register})
 						elseif server then
 							fetchKeybind("OpenVault", {lever})
 							local vehicle = enterNearestVehicle()
@@ -334,16 +352,6 @@ if game.PlaceId == 8417632287 then
 					end
 				}
 			};
-			["DonutStore [READ]"] = {
-				Enabled = false,
-				Menu = {
-					Info = function(self)
-						UI.Banner({
-							Text = "Only Robs the Donut Shop 1 Time (Less Risky!)"            
-						})
-					end
-				}
-			};
 		}
 	})
 	
@@ -352,8 +360,8 @@ if game.PlaceId == 8417632287 then
 		Callback = function()
 			UI.Banner({
 				Text = [[
-				- Fixed Train not Teleporting you out and Removed Laser in the Server Room!
-				- Removed Option to Skip the Train, Added an Option, so the Donut Store is only getting robbed 1 Time (Safest Option)
+				- UPDATED: MINIMAP /\ 19/03/2022!
+				- Infinite Donut Store robbing was Patched! (Option Removed!)
 			]]
 			})
 		end
@@ -386,9 +394,16 @@ if game.PlaceId == 8417632287 then
 			player:Kick()
 		end
 	end
+elseif updatePacketLaunch.V ~= game.PlaceVersion then
+	game.StarterGui:SetCore("SendNotification", {
+		Title = "AutoFarm Hub",
+		Text = "Game updated: Please wait for the Developer to Update!",
+		Duration = 999999,
+		Button1 = "Alright",
+	})
 else	
 	game.StarterGui:SetCore("SendNotification", {
-		Title = "Notification",
+		Title = "AutoFarm Hub",
 		Text = "This game is not Supported!",
 		Duration = 999999,
 		Button1 = "Alright",
