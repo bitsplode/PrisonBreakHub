@@ -3,7 +3,7 @@ local packet = {
 	ImportantPlayers = {
 		1805430105;
 	};
-	V = 57;
+	V = 58;
 };
 
 return packet
